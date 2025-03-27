@@ -1,28 +1,14 @@
 import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
-  level: {
-    type: String,
-    enum: ['basic', 'intermediate', 'advanced'],
-    required: true,
-    lowercase: true
-  },
-  question: {
-    type: String,
-    required: true
-  },
-  options: {
-    type: [String],
-    required: true,
-    validate: {
-      validator: options => options.length === 4,
-      message: 'Must provide exactly 4 options'
-    }
-  },
-  answer: {
-    type: String,
-    required: true
-  }
+  questions: [{
+    id: Number,
+    question: String,
+    options: [String],
+    answer: String
+  }]
 }, { timestamps: true });
 
-export default mongoose.model('Question', questionSchema);
+export const BasicQuestion = mongoose.model('BasicQuestion', questionSchema, 'basic_aptitude');
+export const IntermediateQuestion = mongoose.model('IntermediateQuestion', questionSchema, 'intermediate_aptitude ');
+export const AdvancedQuestion = mongoose.model('AdvancedQuestion', questionSchema, 'advanced_aptitude');
