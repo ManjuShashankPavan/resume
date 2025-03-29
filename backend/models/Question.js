@@ -29,10 +29,9 @@ const questionSchema = new mongoose.Schema({
       trim: true,
       validate: {
         validator: function(answer) {
-          // Case-sensitive comparison with options
-          return this.options.some(opt => opt === answer);
+          return this.options.includes(answer);
         },
-        message: 'Answer must exactly match one of the options (case-sensitive)'
+        message: 'Answer must exactly match one of the options'
       }
     }
   }]
