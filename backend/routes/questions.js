@@ -77,7 +77,7 @@ router.get('/:level', async (req, res) => {
 
     // Debug: Check sample document structure
     if (docCount > 0) {
-      const sampleDoc = await model.findOne();
+      const sampleDoc = await model.findOne();~
       console.log('Sample document structure:', {
         hasQuestionsArray: Array.isArray(sampleDoc?.questions),
         questionsCount: sampleDoc?.questions?.length || 0

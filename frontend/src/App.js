@@ -23,7 +23,7 @@ import Intermediate from "./Aptitude/Intermediate";
 import Advance from "./Aptitude/Advance";
 import Footer from "./components/Footer";
 import AptitudeHome from "./Aptitude/AptitudeHome"; // New component for level selection
-import AptitudeLevelTest from "./Aptitude/AptitudeLevelTest"; // New component for the actual test
+import AptitudeTestPage from "./Aptitude/AptitudeTestPage"; // New component for the actual test
 
 export default function App() {
   const [showSignIn, setShowSignIn] = useState(false);
@@ -80,7 +80,7 @@ export default function App() {
             
             /* Updated Aptitude Test Routes */
             <Route path="/aptitude-test" element={<AptitudeHome />} />
-            <Route path="/aptitude-test/:level" element={<AptitudeLevelTest />} />
+            <Route path="/aptitude-test/:level" element={<AptitudeTestPage />} />
             
             /* Legacy routes (keep for backward compatibility if needed) */
             <Route path="/AptitudeTest" element={<Navigate to="/aptitude-test" replace />} />
