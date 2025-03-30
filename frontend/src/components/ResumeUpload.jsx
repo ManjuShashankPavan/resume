@@ -1,37 +1,77 @@
-import { useRef, useState } from "react";
-import { uploadResume } from "../services/uploadService";
+import { useState, useEffect } from 'react'; // Add useEffect import
+import { uploadAndProcessResume, getUserResumes } from '../services/resume.service';
 
-export default function ResumeUpload() {
-  const fileInputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
-  const [resumeUploaded, setResumeUploaded] = useState(false);
+const ResumeUpload = ({ userId }) => {
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [resumes, setResumes] = useState([]);
+  const [error, setError] = useState('');
 
-  const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      uploadResume(e.target.files[0], setUploading, () => setResumeUploaded(true));
+  const handleUpload = async () => {
+    setError('');
+    try {
+      const result = await uploadAndProcessResume(file, userId, setIsUploading);
+      setResumes(prev => [result, ...prev]);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
+  // Properly defined useEffect
+  useEffect(() => {
+    const fetchResumes = async () => {
+      const userResumes = await getUserResumes(userId);
+      setResumes(userResumes);
+    };
+
+    fetchResumes();
+  }, [userId]);
+
   return (
-    <div className="p-4 bg-white rounded-lg shadow-lg w-96 flex justify-center items-center m-9">
-      <input
-        type="file"
-        accept=".pdf,.doc,.docx"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className="hidden"
-      />
-      {!resumeUploaded && (
+    <div className="resume-manager">
+      <div className="upload-section">
+        <input 
+          type="file"
+          accept=".pdf,.docx"
+          onChange={(e) => setFile(e.target.files[0])}
+        />
         <button 
-          onClick={() => fileInputRef.current.click()} 
-          disabled={uploading} 
-          className={`w-full text-white p-2 rounded transition ${
-            uploading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg--600"
-          }`}
+          onClick={handleUpload} 
+          disabled={!file || isUploading}
         >
-          {uploading ? "Uploading..." : "Upload Resume"}
+          {isUploading ? 'Uploading...' : 'Upload Resume'}
         </button>
-      )}
+        {error && <div className="error-message">{error}</div>}
+      </div>
+
+      <div className="resume-list">
+        <h3>Your Resumes</h3>
+        {resumes.length === 0 ? (
+          <p>No resumes uploaded yet</p>
+        ) : (
+          <ul>
+            {resumes.map((resume, index) => (
+              <li key={index}>
+                <a 
+                  href={resume.downloadUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  {resume.displayName}
+                </a>
+                <span>
+                  {new Date(resume.uploadedAt).toLocaleDateString()}
+                </span>
+                <span>
+                  {(resume.size / 1024).toFixed(1)} KB
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default ResumeUpload;
