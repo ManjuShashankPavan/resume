@@ -1,14 +1,33 @@
 import { supabase } from '../lib/supabase';
+import { createHash } from 'crypto-browserify';
 
-export const uploadAndProcessResume = async (file, userId, setUploading) => {
-  // Validation
+const generateFileHash = async (file) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  return createHash('sha256').update(buffer).digest('hex');
+};
+
+export const checkDuplicateResume = async (file, userId) => {
+  try {
+    const fileHash = await generateFileHash(file);
+    const { data, error } = await supabase
+      .from('resumes_metadata')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('file_hash', fileHash);
+
+    if (error) throw error;
+    return data?.length > 0;
+  } catch (error) {
+    console.error('Duplicate check error:', error);
+    return false;
+  }
+};
+
+export const uploadAndProcessResume = async (file, userId) => {
   if (!file) throw new Error("Please select a file!");
   
-  const validTypes = [
-    'application/pdf', 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  ];
-  
+  const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
   if (!validTypes.includes(file.type)) {
     throw new Error("Only PDF and DOCX files are allowed!");
   }
@@ -17,79 +36,76 @@ export const uploadAndProcessResume = async (file, userId, setUploading) => {
     throw new Error("File size exceeds 5MB limit");
   }
 
-  setUploading(true);
-
   try {
-    const bucketName = "resumes";
-    const originalFileName = file.name;
-    const fileExt = originalFileName.split('.').pop();
-    const filePath = `users/${userId}/${Date.now()}_${originalFileName.replace(/\s+/g, '_')}`;
+    const fileHash = await generateFileHash(file);
+    const originalName = file.name;
+    const filePath = `users/${userId}/${Date.now()}_${originalName.replace(/\s+/g, '_')}`;
 
-    // Check for existing files
-    const { data: existing } = await supabase.storage
-      .from(bucketName)
-      .list(`users/${userId}`, { search: originalFileName });
-
-    if (existing?.length > 0) {
-      throw new Error("You've already uploaded a file with this name");
+    if (await checkDuplicateResume(file, userId)) {
+      throw new Error("This resume already exists in your profile");
     }
 
-    // Upload with metadata
     const { error: uploadError } = await supabase.storage
-      .from(bucketName)
+      .from('resumes')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
-        contentType: file.type,
-        metadata: {
-          originalFileName,
-          userId,
-          uploadedAt: new Date().toISOString()
-        }
+        contentType: file.type
       });
 
     if (uploadError) throw uploadError;
 
-    // Get downloadable URL
+    const { data: metadata, error: dbError } = await supabase
+      .from('resumes_metadata')
+      .insert({
+        user_id: userId,
+        file_name: originalName,
+        file_path: filePath,
+        file_hash: fileHash,
+        file_type: file.type,
+        file_size: file.size
+      })
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
     const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
+      .from('resumes')
       .getPublicUrl(filePath);
 
     return {
-      displayName: originalFileName,
-      storagePath: filePath,
+      id: metadata.id,
+      displayName: metadata.file_name,
       downloadUrl: publicUrl,
-      uploadedAt: new Date().toISOString(),
-      fileType: file.type
+      uploadedAt: metadata.uploaded_at,
+      size: metadata.file_size
     };
 
   } catch (error) {
-    console.error("Resume upload error:", error);
+    console.error("Upload error:", error);
     throw new Error(error.message || "File upload failed");
-  } finally {
-    setUploading(false);
   }
 };
 
 export const getUserResumes = async (userId) => {
   try {
-    const { data: files, error } = await supabase.storage
-      .from('resumes')
-      .list(`users/${userId}`);
+    const { data: resumes, error } = await supabase
+      .from('resumes_metadata')
+      .select('*')
+      .eq('user_id', userId)
+      .order('uploaded_at', { ascending: false });
 
     if (error) throw error;
 
-    return Promise.all(files.map(async (file) => {
-      const { data: { publicUrl } } = supabase.storage
+    return resumes.map(resume => ({
+      id: resume.id,
+      displayName: resume.file_name,
+      downloadUrl: supabase.storage
         .from('resumes')
-        .getPublicUrl(`users/${userId}/${file.name}`);
-
-      return {
-        displayName: file.metadata?.originalFileName || file.name,
-        downloadUrl: publicUrl,
-        uploadedAt: file.metadata?.uploadedAt || file.created_at,
-        size: file.metadata?.size || 0
-      };
+        .getPublicUrl(resume.file_path).data.publicUrl,
+      uploadedAt: resume.uploaded_at,
+      size: resume.file_size
     }));
   } catch (error) {
     console.error("Error fetching resumes:", error);
