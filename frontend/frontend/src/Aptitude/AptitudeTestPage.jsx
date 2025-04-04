@@ -110,7 +110,7 @@ const AptitudeTestPage = () => {
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl mt-14">
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold capitalize">{level} Level</h1>
         <div className="text-xl font-semibold bg-red-100 px-4 py-2 rounded-lg">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Basic() {
+function Intermediate() {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -11,7 +11,7 @@ function Basic() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/questions/basic');
+        const response = await fetch('http://localhost:5000/api/questions/intermediate');
         const data = await response.json();
         setQuestions(data);
       } catch (error) {
@@ -45,20 +45,20 @@ function Basic() {
   }
 
   if (!questions.length) {
-    return <div className="text-center py-8">No questions found for Basic level</div>;
+    return <div className="text-center py-8">No questions found for Intermediate level</div>;
   }
 
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 mt-20">
-      <div className="text-center mb-10 ">
-        <h1 className=" text-2xl font-bold">Aptitude questions</h1>
-        <h1 className="text-2xl font-semibold mt-8">Basic Level</h1>
-        <p className="mt-20">Question {currentIndex + 1} of {questions.length}</p>
+    <div className="mt-16 p-5 flex flex-col items-center justify-center">
+      <div className="text-center mb-10">
+        <h1 className="text-2xl font-bold">Aptitude Questions</h1>
+        <h4 className="text-2xl font-semibold">Intermediate Level</h4>
+        <p className="mt-2">Question {currentIndex + 1} of {questions.length}</p>
       </div>
 
-      <div className="w-full max-w-md mb-8 mt-20">
+      <div className="w-full max-w-md mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">{currentQuestion.question}</h2>
           <div className="space-y-3">
@@ -102,4 +102,4 @@ function Basic() {
   );
 }
 
-export default Basic;
+export default Intermediate;

@@ -6,7 +6,7 @@ const AptitudeHome = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8 mt-10">Aptitude Test</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">Aptitude Test</h1>
       <div className="max-w-md mx-auto space-y-4">
         <button 
           onClick={() => navigate('/aptitude-test/Basic')}

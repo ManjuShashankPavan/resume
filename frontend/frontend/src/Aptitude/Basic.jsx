@@ -51,14 +51,14 @@ function Basic() {
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 mt-20">
-      <div className="text-center mb-10 ">
-        <h1 className=" text-2xl font-bold">Aptitude questions</h1>
-        <h1 className="text-2xl font-semibold mt-8">Basic Level</h1>
-        <p className="mt-20">Question {currentIndex + 1} of {questions.length}</p>
+    <div className="flex flex-col items-center justify-center p-6">
+      <div className="text-center mb-10">
+        <h1 className="text-2xl font-bold">Aptitude questions</h1>
+        <h1 className="text-2xl font-semibold">Basic Level</h1>
+        <p className="mt-2">Question {currentIndex + 1} of {questions.length}</p>
       </div>
 
-      <div className="w-full max-w-md mb-8 mt-20">
+      <div className="w-full max-w-md mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">{currentQuestion.question}</h2>
           <div className="space-y-3">
