@@ -24,6 +24,8 @@ import Advance from "./Aptitude/Advance";
 import Footer from "./components/Footer";
 import AptitudeHome from "./Aptitude/AptitudeHome"; // New component for level selection
 import AptitudeTestPage from "./Aptitude/AptitudeTestPage"; // New component for the actual test
+import TechnicalInterview from "./TechnicalInterview/page.jsx"; // Assuming this is the correct path for the Technical Interview component
+
 
 export default function App() {
   const [showSignIn, setShowSignIn] = useState(false);
@@ -87,7 +89,8 @@ export default function App() {
             <Route path="/Basic" element={<Navigate to="/aptitude-test/Basic" replace />} />
             <Route path="/Intermediate" element={<Navigate to="/aptitude-test/intermediate" replace />} />
             <Route path="/Advance" element={<Navigate to="/aptitude-test/advanced" replace />} />
-
+            <Route path="/TechnicalInterview" element={<TechnicalInterview />} />        
+        
             /* Protected Routes */
             <Route 
               path="/dashboard" 
@@ -102,7 +105,6 @@ export default function App() {
 
         <Footer />
 
-        /* Authentication Popups */
         {showSignIn && (
           <SignInPopup setShowSignIn={setShowSignIn} setShowSignUp={setShowSignUp} />
         )}
